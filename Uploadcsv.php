@@ -37,25 +37,74 @@ class Uploadcsv extends \Magento\Framework\App\Action\Action
     	if ($post) {
 
 			$productId = 2134;
-			$simpleproductid = array('2122', '2123', '2124', '2125', '2126', '2127', '2128', '2129', '2130', '2131', '2132', '2133');
+			$associatedProductIds = array('2122', '2123', '2124', '2125', '2126', '2127', '2128', '2129', '2130', '2131', '2132', '2133');
+			$configurable_product = $this->_objectManager->create('\Magento\Catalog\Model\Product');
+
+			$configurable_product = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($productId);
+		    $configurable_product->setAssociatedProductIds($associatedProductIds); // Setting Associated Products
+		    $configurable_product->setCanSaveConfigurableAttributes(true);
+		    $configurable_product->save(); exit;
+
+			// super attribute 
+			$size_attr_id = $configurable_product->getResource()->getAttribute('egg_type')->getId();
+			$color_attr_id = $configurable_product->getResource()->getAttribute('weight_cake_type')->getId();
+
+			$configurable_product->getTypeInstance()->setUsedProductAttributeIds(array($color_attr_id, $size_attr_id), $configurable_product); //attribute ID of attribute 'size_general' in my store
+
+			$configurableAttributesData = $configurable_product->getTypeInstance()->getConfigurableAttributesAsArray($configurable_product);
+			$configurable_product->setCanSaveConfigurableAttributes(true);
+			$configurable_product->setConfigurableAttributesData($configurableAttributesData);
+			$configurableProductsData = array();
+			$configurable_product->setConfigurableProductsData($configurableProductsData);
+
     		$configproduct = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($productId);
+    		$configurable_product = $this->_objectManager->create('\Magento\Catalog\Model\Product');
 			$attributeModel = $this->_objectManager->create('Magento\ConfigurableProduct\Model\Product\Type\Configurable\Attribute');
 			$position = 0;
 			$attributes = array(173, 180); // Super Attribute Ids Used To Create Configurable Product
 			$associatedProductIds = $simpleproductid;
 
-			foreach ($attributes as $attributeId) {
+			/*foreach ($attributes as $attributeId) {
 			    $data = array('attribute_id' => $attributeId, 'product_id' => $productId, 'position' => $position);
 			    $position++;
 			    $attributeModel->setData($data)->save();
-			}
-			//$configproduct->setTypeId("configurable"); // Setting Product Type As Configurable
-			//$configproduct->setAffectConfigurableProductAttributes(4);
-			$this->_objectManager->create('Magento\ConfigurableProduct\Model\Product\Type\Configurable')->setUsedProductAttributeIds($attributes, $configproduct);
-			//$configproduct->setNewVariationsAttributeSetId(4); // Setting Attribute Set Id
+			}*/
+			
+			$this->_objectManager->create('Magento\ConfigurableProduct\Model\Product\Type\Configurable')->setUsedProductAttributeIds($attributes, $configurable_product);
+			//$configurableAttributesData = $configurable_product->getTypeInstance()->getConfigurableAttributesAsArray($configurable_product);
+			$configurable_product->setConfigurableAttributesData($associatedProductIds);
+			$configurableProductsData = array();
+		    $configurableProductsData['2133'] = array( //[$simple_product_id] = id of a simple product associated with this configurable
+		        '0' => array(
+		            'label' => 'Egg Type', //attribute label
+		            'attribute_id' => '173', //attribute ID of attribute 'size_general' in my store
+		            'value_index' => '213', //value of 'S' index of the attribute 'size_general'
+		            'is_percent'    => 0,
+		            'pricing_value' => '10',
+		        ),
+		        '1' => array(
+		            'label' => 'Egg Type', //attribute label
+		            'attribute_id' => '173', //attribute ID of attribute 'size_general' in my store
+		            'value_index' => '214', //value of 'S' index of the attribute 'size_general'
+		            'is_percent'    => 0,
+		            'pricing_value' => '10',
+		        )
+		    );
+		    $configurable_product->setId($productId);
+		    $configurable_product->setSku($configproduct->getSku());
+		    $configurable_product->setConfigurableProductsData($configurableProductsData);
+
+		    $configurable_product->save();
+
+
 			$configproduct->setAssociatedProductIds($associatedProductIds);// Setting Associated Products
 			$configproduct->setCanSaveConfigurableAttributes(true);
 			$configproduct->save();
+
+			/*$configurable_product = $objectManager->create('Magento\Catalog\Model\Product')->load($productId);
+		    $configurable_product->setAssociatedProductIds($associatedProductIds); // Setting Associated Products
+		    $configurable_product->setCanSaveConfigurableAttributes(true);
+		    $configurable_product->save();*/
 
 			exit;
 
@@ -293,7 +342,6 @@ class Uploadcsv extends \Magento\Framework\App\Action\Action
 						}
 
 						if (!empty($simpleproductid)) {
-							$configproduct = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($productId);
 							$attributeModel = $this->_objectManager->create('Magento\ConfigurableProduct\Model\Product\Type\Configurable\Attribute');
 							$position = 0;
 							$attributes = array(173, 180); // Super Attribute Ids Used To Create Configurable Product
@@ -304,83 +352,13 @@ class Uploadcsv extends \Magento\Framework\App\Action\Action
 							    $position++;
 							    $attributeModel->setData($data)->save();
 							}
-							$configproduct->setTypeId("configurable"); // Setting Product Type As Configurable
-							$configproduct->setAffectConfigurableProductAttributes(4);
-							$this->_objectManager->create('Magento\ConfigurableProduct\Model\Product\Type\Configurable')->setUsedProductAttributeIds($attributes, $configproduct);
-							$configproduct->setNewVariationsAttributeSetId(4); // Setting Attribute Set Id
-							$configproduct->setAssociatedProductIds($associatedProductIds);// Setting Associated Products
-							$configproduct->setCanSaveConfigurableAttributes(true);
-							$configproduct->save();
+
+							$configurable_product = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($productId);
+						    $configurable_product->setAssociatedProductIds($associatedProductIds); // Setting Associated Products
+						    $configurable_product->setCanSaveConfigurableAttributes(true);
+						    $configurable_product->save();
 						}
 					}
-
-					/*$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); //instance of Object manager
-			        $productId = $_product->getId();
-			        $product = $objectManager->create('\Magento\Catalog\Model\Product')->load($productId);
-			        $values = [
-			            [
-			                'record_id'=>0,                                        
-			                'title'=>'Red',
-			                'price'=>10,
-			                'price_type'=>"fixed",
-			                'sort_order'=>1,
-			                'is_delete'=>0
-			            ],
-			            [
-			                'record_id'=>1,                    
-			                'title'=>'White',
-			                'price'=>10,
-			                'price_type'=>"fixed",
-			                'sort_order'=>1,
-			                'is_delete'=>0
-			            ],
-			            [
-			                'record_id'=>2,                    
-			                'title'=>'Black',
-			                'price'=>10,
-			                'price_type'=>"fixed",
-			                'sort_order'=>1,
-			                'is_delete'=>0
-			            ]
-			        ];
-			          
-			        $options = [
-			            [
-			                "sort_order"    => 1,
-			                "title"         => "Field Option",
-			                "price_type"    => "fixed",
-			                "price"         => "",
-			                "type"          => "field",
-			                "is_require"    => 0
-			            ],[
-			                "sort_order"    => 2,
-			                "title"         => "Color",
-			                "price_type"    => "fixed",
-			                "price"         => "",
-			                "type"          => "drop_down",
-			                "is_require"    => 0,
-			                "values"        => $values
-			            ],[
-			                "sort_order"    => 3,
-			                "title"         => "Multiple Option",
-			                "price_type"    => "fixed",
-			                "price"         => "",
-			                "type"          => "multiple",
-			                "values"        => $values,
-			                "is_require"    => 0
-			            ]
-			        ];
-			          
-			        $product->setHasOptions(1);
-			        $product->setCanSaveCustomOptions(true);
-			        foreach ($options as $arrayOption) {
-			            $option = $objectManager->create('\Magento\Catalog\Model\Product\Option')
-			                    ->setProductId($productId)
-			                    ->setStoreId($product->getStoreId())
-			                    ->addData($arrayOption);
-			            $option->save();
-			            $product->addOption($option);
-			        }*/
 		        }
 
 		    }
